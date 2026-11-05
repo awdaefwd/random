@@ -1,0 +1,149 @@
+<div class="tracklist-page" *ngIf="trackList">
+  <!-- Playlist Header -->
+  <div class="playlist-header">
+    <div class="cover">
+      <img 
+        [src]="trackList[0]?.album?.images?.[0]?.url"
+      />
+    </div>
+
+    <div class="info">
+      <p class="type">PLAYLIST</p>
+
+      <h1>
+        {{ trackList[0]?.album?.name }}
+      </h1>
+
+      <p class="meta">
+        {{ trackList.length }} songs
+      </p>
+
+      <button class="play-btn">▶ Play</button>
+    </div>
+  </div>
+
+  <!-- Tracks -->
+  <div class="tracks">
+
+    <div class="track-row header">
+      <span>#</span>
+      <span>Title</span>
+      <span>Album</span>
+      <span>Duration</span>
+    </div>
+
+    <div 
+      class="track-row" 
+      *ngFor="let item of trackList; let i = index"
+      (click)="itemPressed(item)"
+    >
+
+      <!-- index / play -->
+      <span class="index">
+        {{ i + 1 }}
+      </span>
+
+      <!-- title -->
+      <div class="title">
+        <img 
+          [src]="item?.album?.images?.[0]?.url"
+          alt="cover"
+        />
+
+        <div>
+          <p class="name">
+            {{ item?.name }}
+          </p>
+
+          <p class="artist">
+            {{ item?.artists?.[0]?.name }}
+          </p>
+        </div>
+      </div>
+
+      <!-- album -->
+      <span class="album">
+        {{ item?.album?.name || '-' }}
+      </span>
+
+      <!-- duration -->
+      <span class="duration">
+        {{ item?.duration_ms || 0 }}
+      </span>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+
+<div class="modal" *ngIf="showModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+
+    <button class="close-btn" (click)="closeModal()">✖</button>
+
+    <div class="modal-body">
+      
+      <img 
+        class="modal-cover"
+        [src]="selectedItem?.album?.images?.[0]?.url"
+      />
+
+      <h2>{{ selectedItem?.name }}</h2>
+
+      <p class="artist">
+        {{ getArtists(selectedItem) }}
+      </p>
+
+      <p class="album">
+        Album: {{ selectedItem?.album?.name }}
+      </p>
+
+      <p class="duration">
+        Duration: {{ selectedItem?.duration_ms }}
+      </p>
+       <!-- LOADING -->
+      <div *ngIf="isLoadingAnalysis" class="loading">
+        <div class="spinner"></div>
+        <p>Analyzing track...</p>
+      </div>
+
+      <!-- AI RESULT -->
+      <div *ngIf="analysisResult && !isLoadingAnalysis" class="analysis">
+
+        <p><strong>Genre:</strong> {{ analysisResult.genre }}</p>
+        <p><strong>Subgenre:</strong> {{ analysisResult.subgenre }}</p>
+
+        <div class="chips">
+          <span *ngFor="let mood of analysisResult.mood">
+            {{ mood }}
+          </span>
+        </div>
+
+        <div class="energy">
+          <label>Energy</label>
+          <div class="bar">
+            <div 
+              class="fill"
+              [style.width]="
+                analysisResult.energy === 'low' ? '30%' :
+                analysisResult.energy === 'medium' ? '60%' : 
+                analysisResult.energy === 'high' ? '90%' : '0%'
+              ">
+            </div>
+          </div>
+        </div>
+
+        <div class="tempo" >
+          <label>Tempo</label>
+          <div class="pulse" [ngClass]="analysisResult['tempo range']"></div>
+        </div>
+        <div class="summary">
+          {{ analysisResult.summary }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

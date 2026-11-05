@@ -1,0 +1,95 @@
+html {
+  scroll-behavior: smooth;
+}
+
+.content {
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Base */
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow-x: hidden; /* prevent horizontal scroll */
+  background: radial-gradient(circle at top, #0a0a0f, #050508 70%);
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* App Grid */
+.app {
+  display: grid;
+  min-height: 100vh;
+  position: relative;
+  overflow: visible;
+  background: (
+    radial-gradient(circle at 30% 20%, #8a2be233, transparent 40%),
+    radial-gradient(circle at 70% 80%, #00ffe022, transparent 50%),
+    #050508
+  );
+  color: white;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: auto 80px;
+  height: auto;
+  background-size: 600% 600%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Sidebar */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  padding: 20px;
+  border-right: 1px solid rgba(154, 142, 142, 0.1);
+}
+
+/* Topbar */
+.topbar {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(5,5,8,0.8);
+  backdrop-filter: blur(10px);
+}
+
+.topbar input {
+  width: 250px;
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+/* Player */
+.player {
+  position: fixed;
+  bottom: 0;
+  left: 220px; /* sidebar width */
+  width: calc(100% - 220px); /* fill rest of screen */
+  height: 80px;
+  z-index: 100;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.1);
+
+  box-sizing: border-box;
+}

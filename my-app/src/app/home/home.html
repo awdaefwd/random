@@ -1,0 +1,55 @@
+<div class="app" [class.collapsed]="isCollapsed">
+<div class="cursor-glow"></div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h1 class="logo">SYNTH</h1>
+    <nav>
+      <a>Home</a>
+      <a>Discover</a>
+      <a>Library</a>
+      <a>Favorites</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Top -->
+    <header class="topbar">
+      <input type="text" placeholder="Search vibrations..." />
+      <div class="user">👤</div>
+    </header>
+
+    <!-- Content -->
+    <section class="content">
+      <h2>Trending Waves</h2>
+
+      <div class="grid">
+        <div class="card" *ngFor="let trackList of playlists">
+          <div class="cover" (click)="onPlaylistPress(trackList.id)">
+            <img [src]="trackList.images[0]?.url" [alt]="trackList.id">
+          </div>
+          <h3>{{trackList.name}}</h3>
+          <p>{{trackList.description}}</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Player -->
+  <footer class="player">
+    <div class="track-info">
+      <strong>Nothing playing</strong>
+    </div>
+
+    <div class="controls">
+      <button>⏮</button>
+      <button class="play">▶</button>
+      <button>⏭</button>
+    </div>
+
+    <div class="volume">⚡</div>
+  </footer>
+
+</div>
