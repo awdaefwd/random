@@ -1,0 +1,54 @@
+<div class="app-shell">
+  <div
+    class="cursor-glow"
+    aria-hidden="true"
+    [class.visible]="cursorVisible"
+    [style.left.px]="pointerX"
+    [style.top.px]="pointerY"
+  ></div>
+
+  <aside class="sidebar">
+    <a class="logo" routerLink="/home">SYNTH</a>
+    <nav aria-label="Main navigation">
+      <a routerLink="/home" routerLinkActive="active" ariaCurrentWhenActive="page">Home</a>
+      <a routerLink="/library" routerLinkActive="active" ariaCurrentWhenActive="page">Library</a>
+      <a routerLink="/discover" routerLinkActive="active" ariaCurrentWhenActive="page">Discover</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <router-outlet />
+  </main>
+
+  <footer class="player" aria-label="Spotify player">
+    <div class="track-info">
+      <img
+        *ngIf="playback.currentTrack()?.album?.images?.[0]?.url"
+        [src]="playback.currentTrack()?.album?.images?.[0]?.url"
+        alt=""
+      />
+      <div class="track-copy">
+        <strong>{{ playback.currentTrack()?.name || 'Nothing playing' }}</strong>
+        <span>{{ playback.currentTrack()?.artists?.[0]?.name || 'Choose a track to play' }}</span>
+        <span *ngIf="playback.error()" class="player-error" role="status">{{ playback.error() }}</span>
+      </div>
+    </div>
+    <div class="controls" aria-label="Playback controls">
+      <button type="button" [disabled]="!playback.canSkip()" title="Previous track" aria-label="Previous track" (click)="playback.previousTrack()">⏮</button>
+      <button
+        type="button"
+        class="play"
+        [disabled]="!playback.currentTrack()"
+        [title]="playback.isPaused() ? 'Play' : 'Pause'"
+        [attr.aria-label]="playback.isPaused() ? 'Play' : 'Pause'"
+        (click)="playback.togglePlayback()"
+      >{{ playback.isPaused() ? '▶' : 'Ⅱ' }}</button>
+      <button type="button" [disabled]="!playback.canSkip()" title="Next track" aria-label="Next track" (click)="playback.nextTrack()">⏭</button>
+    </div>
+    <div class="player-note" [class.login-required]="playback.needsLogin()">
+      <span *ngIf="playback.status() === 'connecting'">Connecting to Spotify…</span>
+      <span *ngIf="playback.status() === 'ready' && !playback.error()">Spotify Premium player</span>
+      <button *ngIf="playback.needsLogin()" type="button" (click)="reconnectSpotify()">Sign in again</button>
+    </div>
+  </footer>
+</div>

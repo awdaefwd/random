@@ -11,7 +11,7 @@ export class SpotifyService {
 
     const client_id = '6ee84600c8844f2da211b99d7a3d3dfa';
     const redirect_uri = 'http://127.0.0.1:8888/callback';
-    const scope = 'user-read-private user-read-email playlist-read-private playlist-read-collaborative user-top-read';
+    const scope = 'user-read-private user-read-email playlist-read-private playlist-read-collaborative user-top-read streaming user-modify-playback-state user-read-playback-state';
 
     const state = this.generateRandomString(16);
 

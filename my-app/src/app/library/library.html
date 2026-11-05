@@ -1,0 +1,54 @@
+<section class="content">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">YOUR SPOTIFY LIBRARY</p>
+      <h1>Your playlists</h1>
+      <p class="section-description">All your playlists, together in one place.</p>
+    </div>
+    <label class="page-search">
+      <span aria-hidden="true">⌕</span>
+      <input type="search" [(ngModel)]="searchQuery" aria-label="Search playlists" placeholder="Search your playlists..." />
+      <button *ngIf="searchQuery" type="button" aria-label="Clear search" (click)="searchQuery = ''">×</button>
+    </label>
+  </header>
+
+  <div class="status-panel" *ngIf="isLoading" role="status">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Loading your playlists…</p>
+  </div>
+  <div class="status-panel" *ngIf="!isLoading && loadError" role="alert">
+    <p>{{ loadError }}</p>
+    <button *ngIf="requiresLogin" type="button" class="secondary-button" (click)="reconnectSpotify()">Sign in again</button>
+    <button *ngIf="!requiresLogin" type="button" class="secondary-button" (click)="loadPlaylists()">Try again</button>
+  </div>
+  <div class="status-panel" *ngIf="!isLoading && !loadError && playlists.length === 0">
+    <h2>No playlists yet</h2>
+    <p>Create or follow a playlist in Spotify and it will appear here.</p>
+  </div>
+  <div class="status-panel" *ngIf="!isLoading && !loadError && playlists.length > 0 && filteredPlaylists.length === 0">
+    <h2>No matching playlists</h2>
+    <p>Try a different search.</p>
+  </div>
+
+  <div class="playlist-grid" *ngIf="!isLoading && !loadError && filteredPlaylists.length > 0">
+    <button
+      type="button"
+      class="playlist-card"
+      *ngFor="let playlist of filteredPlaylists"
+      (click)="openPlaylist(playlist.id)"
+    >
+      <span class="cover">
+        <img
+          *ngIf="playlist.images?.[0]?.url"
+          [src]="playlist.images[0].url"
+          [alt]="playlist.name + ' cover'"
+          loading="lazy"
+        />
+        <span *ngIf="!playlist.images?.[0]?.url" class="cover-placeholder" aria-hidden="true">♫</span>
+      </span>
+      <span class="playlist-title">{{ playlist.name }}</span>
+      <span class="playlist-description">{{ playlist.description || 'Your personal collection of tracks.' }}</span>
+      <span class="playlist-meta">{{ playlist.tracks?.total || 0 }} tracks</span>
+    </button>
+  </div>
+</section>

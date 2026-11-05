@@ -21,6 +21,13 @@ there. The `.env` file is ignored by Git and must not be committed.
 Start the backend from `spotify-backend` with `node server.js`, then start the
 Angular app from this directory with `ng serve`.
 
+## App pages
+
+- **Home** shows your 10 most-played tracks from Spotify's short-term range (roughly the last four weeks).
+- **Library** lists and searches your Spotify playlists.
+- **Discover** creates a playful AI listening-vibe card from the names of your recent top tracks.
+- **Playback** uses Spotify's Web Playback SDK and requires Spotify Premium. After granting the new playback permissions, sign in again so Spotify can issue an updated token.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

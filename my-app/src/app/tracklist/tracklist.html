@@ -1,148 +1,126 @@
-<div class="tracklist-page" *ngIf="trackList">
-  <!-- Playlist Header -->
+<div class="tracklist-page">
+  <button type="button" class="back-button" (click)="backToPlaylists()">← Your playlists</button>
+
   <div class="playlist-header">
     <div class="cover">
-      <img 
-        [src]="trackList[0]?.album?.images?.[0]?.url"
-      />
+      <img *ngIf="trackList[0]?.album?.images?.[0]?.url" [src]="trackList[0].album.images[0].url" alt="Playlist cover" />
+      <span *ngIf="!trackList[0]?.album?.images?.[0]?.url" aria-hidden="true">♫</span>
     </div>
-
     <div class="info">
       <p class="type">PLAYLIST</p>
-
-      <h1>
-        {{ trackList[0]?.album?.name }}
-      </h1>
-
-      <p class="meta">
-        {{ trackList.length }} songs
-      </p>
-
-      <button class="play-btn">▶ Play</button>
+      <h1>{{ trackList[0]?.album?.name || 'Track explorer' }}</h1>
+      <p class="meta">Select a track to explore its sound with AI.</p>
+      <span class="track-count" *ngIf="!isLoadingTracks && !trackError">
+        {{ filteredTracks.length }} {{ filteredTracks.length === 1 ? 'track' : 'tracks' }}
+      </span>
     </div>
   </div>
 
-  <!-- Tracks -->
-  <div class="tracks">
+  <label class="track-search">
+    <span aria-hidden="true">⌕</span>
+    <input
+      type="search"
+      [(ngModel)]="searchQuery"
+      aria-label="Search tracks by title, artist, or album"
+      placeholder="Search title, artist, or album..."
+    />
+    <button
+      *ngIf="searchQuery"
+      type="button"
+      aria-label="Clear search"
+      (click)="searchQuery = ''"
+    >×</button>
+  </label>
 
+  <div class="track-status" *ngIf="isLoadingTracks" role="status">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Loading tracks…</p>
+  </div>
+  <div class="track-status" *ngIf="!isLoadingTracks && trackError" role="alert">
+    <p>{{ trackError }}</p>
+    <button *ngIf="trackRequiresLogin" type="button" class="status-button" (click)="reconnectSpotify()">Sign in again</button>
+    <button *ngIf="!trackRequiresLogin" type="button" class="status-button" (click)="backToPlaylists()">Back to playlists</button>
+  </div>
+  <div class="track-status" *ngIf="!isLoadingTracks && !trackError && trackList.length === 0">
+    <p>This playlist is empty.</p>
+  </div>
+  <div class="track-status" *ngIf="!isLoadingTracks && !trackError && trackList.length > 0 && filteredTracks.length === 0">
+    <p>No matching tracks. Try a different search.</p>
+  </div>
+
+  <div class="tracks" *ngIf="!isLoadingTracks && !trackError && filteredTracks.length > 0">
     <div class="track-row header">
       <span>#</span>
       <span>Title</span>
-      <span>Album</span>
-      <span>Duration</span>
+      <span class="album-column">Album</span>
+      <span class="duration-column">Duration</span>
+      <span>Play</span>
+      <span>AI</span>
     </div>
 
-    <div 
-      class="track-row" 
-      *ngFor="let item of trackList; let i = index"
-      (click)="itemPressed(item)"
+    <div
+      class="track-row"
+      *ngFor="let item of filteredTracks; let i = index"
     >
-
-      <!-- index / play -->
-      <span class="index">
-        {{ i + 1 }}
+      <span class="index">{{ i + 1 }}</span>
+      <span class="title">
+        <img *ngIf="item.album?.images?.[0]?.url" [src]="item.album.images[0].url" alt="" loading="lazy" />
+        <span *ngIf="!item.album?.images?.[0]?.url" class="cover-placeholder" aria-hidden="true">♫</span>
+        <span class="title-copy">
+          <span class="name">{{ item.name || 'Unknown track' }}</span>
+          <span class="artist">{{ getArtists(item) || 'Unknown artist' }}</span>
+        </span>
       </span>
-
-      <!-- title -->
-      <div class="title">
-        <img 
-          [src]="item?.album?.images?.[0]?.url"
-          alt="cover"
-        />
-
-        <div>
-          <p class="name">
-            {{ item?.name }}
-          </p>
-
-          <p class="artist">
-            {{ item?.artists?.[0]?.name }}
-          </p>
-        </div>
-      </div>
-
-      <!-- album -->
-      <span class="album">
-        {{ item?.album?.name || '-' }}
-      </span>
-
-      <!-- duration -->
-      <span class="duration">
-        {{ item?.duration_ms || 0 }}
-      </span>
-
+      <span class="album album-column">{{ item.album?.name || '-' }}</span>
+      <span class="duration duration-column">{{ formatDuration(item.duration_ms) }}</span>
+      <button type="button" class="row-action play-action" (click)="playTrack(item, i)" [attr.aria-label]="'Play ' + item.name" title="Play track">▶</button>
+      <button type="button" class="row-action" (click)="itemPressed(item)" [attr.aria-label]="'Analyze ' + item.name" title="AI track analysis">AI</button>
     </div>
-
   </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
-
-<div class="modal" *ngIf="showModal">
+<div class="modal" *ngIf="showModal" role="dialog" aria-modal="true" aria-labelledby="analysis-title">
   <div class="modal-content" (click)="$event.stopPropagation()">
-
-    <button class="close-btn" (click)="closeModal()">✖</button>
-
+    <button type="button" class="close-btn" (click)="closeModal()" aria-label="Close analysis">×</button>
     <div class="modal-body">
-      
-      <img 
+      <img
+        *ngIf="selectedItem?.album?.images?.[0]?.url"
         class="modal-cover"
-        [src]="selectedItem?.album?.images?.[0]?.url"
+        [src]="selectedItem.album.images[0].url"
+        [alt]="selectedItem?.album?.name || 'Album cover'"
       />
+      <div *ngIf="!selectedItem?.album?.images?.[0]?.url" class="modal-cover cover-placeholder" aria-hidden="true">♫</div>
 
-      <h2>{{ selectedItem?.name }}</h2>
+      <p class="type">AI TRACK ANALYSIS</p>
+      <h2 id="analysis-title">{{ selectedItem?.name }}</h2>
+      <p class="artist">{{ getArtists(selectedItem) }}</p>
+      <p class="album">Album: {{ selectedItem?.album?.name }}</p>
+      <p class="duration">Duration: {{ formatDuration(selectedItem?.duration_ms) }}</p>
 
-      <p class="artist">
-        {{ getArtists(selectedItem) }}
-      </p>
-
-      <p class="album">
-        Album: {{ selectedItem?.album?.name }}
-      </p>
-
-      <p class="duration">
-        Duration: {{ selectedItem?.duration_ms }}
-      </p>
-       <!-- LOADING -->
-      <div *ngIf="isLoadingAnalysis" class="loading">
-        <div class="spinner"></div>
-        <p>Analyzing track...</p>
+      <div *ngIf="isLoadingAnalysis" class="loading" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <p>Analyzing track…</p>
       </div>
+      <div *ngIf="analysisError && !isLoadingAnalysis" class="analysis-error" role="alert">{{ analysisError }}</div>
 
-      <!-- AI RESULT -->
       <div *ngIf="analysisResult && !isLoadingAnalysis" class="analysis">
-
         <p><strong>Genre:</strong> {{ analysisResult.genre }}</p>
         <p><strong>Subgenre:</strong> {{ analysisResult.subgenre }}</p>
-
         <div class="chips">
-          <span *ngFor="let mood of analysisResult.mood">
-            {{ mood }}
-          </span>
+          <span *ngFor="let mood of analysisResult.mood">{{ mood }}</span>
         </div>
-
         <div class="energy">
-          <label>Energy</label>
+          <div class="stat-heading"><span>Energy</span><strong>{{ analysisResult.energy }}</strong></div>
           <div class="bar">
-            <div 
+            <div
               class="fill"
-              [style.width]="
-                analysisResult.energy === 'low' ? '30%' :
-                analysisResult.energy === 'medium' ? '60%' : 
-                analysisResult.energy === 'high' ? '90%' : '0%'
-              ">
-            </div>
+              [style.width]="analysisResult.energy === 'low' ? '30%' : analysisResult.energy === 'medium' ? '60%' : analysisResult.energy === 'high' ? '90%' : '0%'"
+            ></div>
           </div>
         </div>
-
-        <div class="tempo" >
-          <label>Tempo</label>
-          <div class="pulse" [ngClass]="analysisResult['tempo range']"></div>
-        </div>
-        <div class="summary">
-          {{ analysisResult.summary }}
-        </div>
+        <p class="tempo"><strong>Tempo:</strong> {{ analysisResult.tempo || '—' }}<span *ngIf="analysisResult.bpm"> · {{ analysisResult.bpm }} BPM</span></p>
+        <p class="summary">{{ analysisResult.summary }}</p>
       </div>
     </div>
   </div>

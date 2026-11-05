@@ -59,5 +59,11 @@ export const PROMPTS =
 
         If unsure, prefer a specific EDM genre over "Electronic".`,
 
+    LISTENING_VIBE: (tracks: Array<{ name: string; artists: string; album: string }>) =>
+        `You are a playful music curator. Based only on this Spotify top tracks metadata, create a short, imaginative listening-vibe profile. Do not claim you heard the audio or know the listener personally. Return only valid JSON with exactly these fields: "headline" (short title), "persona" (playful one-line archetype), "moods" (array of 3 short tags), and "description" (two friendly sentences). Keep it positive and specific to the mix; avoid unsupported factual claims.
+
+Tracks:
+${JSON.stringify(tracks)}`,
+
     PLAYLIST_ANALYSIS: (playlistName: string, trackCount: number) => `You are a music analysis system.`,
 }

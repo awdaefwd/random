@@ -1,0 +1,271 @@
+.discover-page {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 32px clamp(18px, 4vw, 42px) 115px;
+}
+
+.discover-heading {
+  max-width: 720px;
+  margin: 0 auto 30px;
+  text-align: center;
+
+  h1 {
+    margin: 10px 0;
+    font-size: clamp(30px, 5vw, 48px);
+    letter-spacing: -0.05em;
+  }
+
+  > p:last-child {
+    margin: 0;
+    color: #aaa;
+    line-height: 1.6;
+  }
+}
+
+.eyebrow,
+.track-count {
+  margin: 0;
+  color: #00ffe0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+}
+
+.vibe-stage {
+  display: grid;
+  min-height: 350px;
+  grid-template-columns: minmax(210px, 0.8fr) minmax(0, 1.2fr);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 20% 20%, #8a2be224, transparent 38%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.vibe-art {
+  position: relative;
+  display: grid;
+  min-height: 300px;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, #00ffe022, transparent 55%),
+    linear-gradient(145deg, #121423, #171024);
+}
+
+.orb {
+  position: absolute;
+  width: 65%;
+  aspect-ratio: 1;
+  border: 1px solid #00ffe05c;
+  border-radius: 50%;
+  box-shadow: 0 0 50px #00ffe022;
+  transform: rotate(-35deg) scaleY(0.42);
+}
+
+.orb-two {
+  border-color: #b967ff88;
+  transform: rotate(38deg) scaleY(0.42);
+}
+
+.music-note {
+  z-index: 1;
+  color: #00ffe0;
+  font-size: 88px;
+  text-shadow: 0 0 35px #00ffe077;
+}
+
+.spark {
+  position: absolute;
+  top: 20%;
+  right: 24%;
+  color: #d7a4ff;
+  font-size: 28px;
+}
+
+.vibe-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(22px, 4vw, 42px);
+
+  h2 {
+    margin: 10px 0 5px;
+    font-size: clamp(25px, 3.5vw, 36px);
+    letter-spacing: -0.04em;
+  }
+}
+
+.track-count {
+  color: #9999a8;
+  font-size: 9px;
+}
+
+.persona {
+  margin: 0;
+  color: #00ffe0;
+  font-size: 17px;
+}
+
+.vibe-description {
+  max-width: 540px;
+  color: #c4c4ce;
+  line-height: 1.65;
+}
+
+.mood-tags,
+.track-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mood-tags span {
+  padding: 7px 11px;
+  border: 1px solid #00ffe033;
+  border-radius: 999px;
+  background: #00ffe012;
+  color: #b8fff6;
+  font-size: 12px;
+}
+
+.action-button {
+  margin-top: 21px;
+  padding: 11px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #00ffe0, #9b64ff);
+  color: #071311;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 26px #00ffe033;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+}
+
+.disclaimer {
+  margin: 10px 0 0;
+  color: #777785;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.state-card {
+  display: grid;
+  min-height: 150px;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  color: #aaa;
+  text-align: center;
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    color: white;
+  }
+}
+
+.compact {
+  width: 100%;
+  min-height: 112px;
+  box-sizing: border-box;
+  margin-bottom: 2px;
+  padding: 16px;
+  text-align: left;
+
+  h2 {
+    width: 100%;
+    font-size: 20px;
+  }
+}
+
+.error {
+  border-color: #ff829155;
+  color: #ffabb5;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #444;
+  border-top-color: #00ffe0;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.generating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: #c4c4ce;
+  font-size: 13px;
+}
+
+.generating .spinner {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+.track-strip {
+  margin-top: 28px;
+
+  h2 {
+    font-size: 18px;
+  }
+}
+
+.track-chips span {
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #c4c4ce;
+  font-size: 12px;
+}
+
+.track-chips strong {
+  margin-right: 5px;
+  color: #00ffe0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 700px) {
+  .vibe-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .vibe-art {
+    min-height: 190px;
+  }
+
+  .music-note {
+    font-size: 65px;
+  }
+
+  .orb {
+    width: 42%;
+  }
+}

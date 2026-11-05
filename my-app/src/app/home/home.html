@@ -1,55 +1,53 @@
-<div class="app" [class.collapsed]="isCollapsed">
-<div class="cursor-glow"></div>
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h1 class="logo">SYNTH</h1>
-    <nav>
-      <a>Home</a>
-      <a>Discover</a>
-      <a>Library</a>
-      <a>Favorites</a>
-    </nav>
-  </aside>
-
-  <!-- Main -->
-  <main class="main">
-
-    <!-- Top -->
-    <header class="topbar">
-      <input type="text" placeholder="Search vibrations..." />
-      <div class="user">👤</div>
-    </header>
-
-    <!-- Content -->
-    <section class="content">
-      <h2>Trending Waves</h2>
-
-      <div class="grid">
-        <div class="card" *ngFor="let trackList of playlists">
-          <div class="cover" (click)="onPlaylistPress(trackList.id)">
-            <img [src]="trackList.images[0]?.url" [alt]="trackList.id">
-          </div>
-          <h3>{{trackList.name}}</h3>
-          <p>{{trackList.description}}</p>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Player -->
-  <footer class="player">
-    <div class="track-info">
-      <strong>Nothing playing</strong>
+<section class="content">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">YOUR LISTENING, YOUR SOUND</p>
+      <h1>Your top tracks</h1>
+      <p class="section-description">The songs you've been listening to most over the last 4 weeks.</p>
     </div>
+    <label class="page-search">
+      <span aria-hidden="true">⌕</span>
+      <input type="search" [(ngModel)]="searchQuery" aria-label="Search top tracks" placeholder="Search your top tracks..." />
+      <button *ngIf="searchQuery" type="button" aria-label="Clear search" (click)="searchQuery = ''">×</button>
+    </label>
+  </header>
 
-    <div class="controls">
-      <button>⏮</button>
-      <button class="play">▶</button>
-      <button>⏭</button>
-    </div>
+  <div class="status-panel" *ngIf="isLoading" role="status">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Loading your top tracks…</p>
+  </div>
+  <div class="status-panel" *ngIf="!isLoading && loadError" role="alert">
+    <p>{{ loadError }}</p>
+    <button *ngIf="requiresLogin" type="button" class="secondary-button" (click)="reconnectSpotify()">Sign in again</button>
+    <button *ngIf="!requiresLogin" type="button" class="secondary-button" (click)="loadTopTracks()">Try again</button>
+  </div>
+  <div class="status-panel" *ngIf="!isLoading && !loadError && topTracks.length === 0">
+    <h2>Your listening history is getting started</h2>
+    <p>Listen to more music on Spotify and your top tracks will show up here.</p>
+  </div>
+  <div class="status-panel" *ngIf="!isLoading && !loadError && topTracks.length > 0 && filteredTopTracks.length === 0">
+    <h2>No matching tracks</h2>
+    <p>Try a different title, artist, or album.</p>
+  </div>
 
-    <div class="volume">⚡</div>
-  </footer>
-
-</div>
+  <div class="track-grid" *ngIf="!isLoading && !loadError && filteredTopTracks.length > 0">
+    <article
+      class="track-card"
+      *ngFor="let track of filteredTopTracks; let i = index"
+    >
+      <a class="track-link" [href]="trackUrl(track)" target="_blank" rel="noopener noreferrer">
+        <span class="track-rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
+        <span class="cover">
+          <img *ngIf="track.album?.images?.[0]?.url" [src]="track.album.images[0].url" [alt]="track.album?.name + ' cover'" loading="lazy" />
+          <span *ngIf="!track.album?.images?.[0]?.url" class="cover-placeholder" aria-hidden="true">♫</span>
+        </span>
+        <span class="track-title">{{ track.name }}</span>
+        <span class="track-artist">{{ getArtists(track) }}</span>
+        <span class="track-album">{{ track.album?.name || 'Open in Spotify' }}</span>
+      </a>
+      <button type="button" class="card-play" (click)="playTrack(track, i)" [attr.aria-label]="'Play ' + track.name">
+        ▶ Play
+      </button>
+    </article>
+  </div>
+</section>

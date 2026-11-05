@@ -31,6 +31,24 @@ app.get('/', (req, res) => {
   res.send('Backend is running 🚀');
 });
 
+function getOpenAIOutputText(data) {
+  if (typeof data?.output_text === 'string') {
+    return data.output_text;
+  }
+
+  if (!Array.isArray(data?.output)) {
+    return null;
+  }
+
+  const text = data.output
+    .flatMap(item => Array.isArray(item?.content) ? item.content : [])
+    .filter(content => content?.type === 'output_text' && typeof content.text === 'string')
+    .map(content => content.text)
+    .join('');
+
+  return text || null;
+}
+
 app.post('/api/openai', async (req, res) => {
   const { prompt } = req.body;
   if (typeof prompt !== 'string' || !prompt.trim()) {
@@ -43,14 +61,27 @@ app.post('/api/openai', async (req, res) => {
       { model: 'gpt-5.4-mini', input: prompt },
       { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } },
     );
-    const text = response.data.output_text;
-    if (typeof text !== 'string') {
-      console.error('OpenAI response did not contain output text');
+    const text = getOpenAIOutputText(response.data);
+    if (text === null) {
+      console.error('OpenAI response did not contain output text:', {
+        responseId: response.data?.id,
+        status: response.data?.status,
+        incompleteReason: response.data?.incomplete_details?.reason,
+        outputTypes: Array.isArray(response.data?.output)
+          ? response.data.output.map(item => item?.type).filter(Boolean)
+          : [],
+      });
       return res.status(502).json({ error: 'Invalid response from OpenAI' });
     }
     return res.json({ text });
   } catch (err) {
-    console.error('OpenAI request failed:', err.response?.status || err.message || err);
+    console.error('OpenAI request failed:', {
+      status: err.response?.status || 'network error',
+      type: err.response?.data?.error?.type,
+      code: err.response?.data?.error?.code,
+      requestId: err.response?.headers?.['x-request-id'],
+      message: err.response?.data?.error?.message || err.message || 'unknown',
+    });
     return res.status(502).json({ error: 'OpenAI request failed' });
   }
 });

@@ -45,7 +45,7 @@ export class SpotifyApiService {
   }
 
   getTopTracksShort(): Observable<any>{
-    return this.http.get(`${this.apiUrl}/me/top/tracks?time_range=short_term`)
+    return this.http.get(`${this.apiUrl}/me/top/tracks?time_range=short_term&limit=10`)
   }
 
   getAudioFeatures(trackIds: string[]): Observable<any> {

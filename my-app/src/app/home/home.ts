@@ -1,62 +1,80 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { SpotifyApiService } from '../services/spotify-endpoints.services';
-import { SpotifyAuthService } from '../services/spotify-auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { SpotifyService } from '../srv/spotify';
+import { SpotifyPlaybackService } from '../services/spotify-playback.service';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class HomeComponent implements OnInit{
-  
-  playlists: any[] = [];
-  isCollapsed = false;
+export class HomeComponent implements OnInit {
+  topTracks: any[] = [];
+  searchQuery = '';
+  isLoading = false;
+  loadError = '';
+  requiresLogin = false;
+
+  get filteredTopTracks(): any[] {
+    const query = this.searchQuery.trim().toLocaleLowerCase();
+    if (!query) return this.topTracks;
+
+    return this.topTracks.filter(track =>
+      `${track.name || ''} ${this.getArtists(track)} ${track.album?.name || ''}`
+        .toLocaleLowerCase()
+        .includes(query),
+    );
+  }
 
   constructor(
     private spotify: SpotifyApiService,
-    private auth: SpotifyAuthService,
-    private route: ActivatedRoute,
-    private router: Router,
+    private spotifyService: SpotifyService,
+    private playback: SpotifyPlaybackService,
     @Inject(PLATFORM_ID) private platformId: object,
   ) {}
-  
+
   ngOnInit(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (isPlatformBrowser(this.platformId)) this.loadTopTracks();
+  }
 
-    this.spotify.getUserProfile().subscribe({
-      next:(res) => console.log(res),
-      error: (err) => console.error(err)
-    });
+  loadTopTracks(): void {
+    this.isLoading = true;
+    this.loadError = '';
+    this.requiresLogin = false;
 
-    this.spotify.getUserPlaylists().subscribe({
-      next: (res) => {
-        this.playlists = res.items;
+    this.spotify.getTopTracksShort().subscribe({
+      next: response => {
+        this.topTracks = response.items || [];
+        this.isLoading = false;
       },
-      error: (err) => console.error('Error fetching playlists', err)
+      error: err => {
+        console.error('Error fetching top tracks', err);
+        this.requiresLogin = err.status === 401;
+        this.loadError = err.status === 401
+          ? 'A Spotify-munkamenet lejárt. Jelentkezz be újra.'
+          : 'Most nem sikerült betölteni a Top 10 számaidat.';
+        this.isLoading = false;
+      },
     });
   }
 
-  onPlaylistPress(playListId: string){
-    this.router.navigate(['/tracklist', playListId]); 
-  }
-  
-
-  toggleSidebar() {
-    this.isCollapsed = !this.isCollapsed;
+  reconnectSpotify(): void {
+    this.spotifyService.login();
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
-    const glow = document.querySelector('.cursor-glow') as HTMLElement;
-    if (glow) {
-      glow.style.transform =
-        `translate(${event.clientX}px, ${event.clientY}px) translate(-50%, -50%)`;
-    }
+  getArtists(track: any): string {
+    return track?.artists?.map((artist: any) => artist.name).join(', ') || 'Unknown artist';
   }
 
+  trackUrl(track: any): string {
+    return track?.external_urls?.spotify || 'https://open.spotify.com/';
+  }
+
+  playTrack(track: any, index: number): void {
+    void this.playback.playTracks(this.filteredTopTracks, index);
+  }
 }

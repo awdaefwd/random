@@ -1,0 +1,71 @@
+<section class="discover-page">
+  <header class="discover-heading">
+    <p class="eyebrow">A LITTLE SELF-DISCOVERY</p>
+    <h1>What does your music say about you?</h1>
+    <p>Let your recent favorites set the scene. We’ll turn your Top 10 into a playful listening-vibe card.</p>
+  </header>
+
+  <div class="state-card" *ngIf="isLoadingTracks" role="status">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Gathering your recent favorites…</p>
+  </div>
+
+  <div class="state-card" *ngIf="!isLoadingTracks && loadError" role="alert">
+    <p>{{ loadError }}</p>
+    <button *ngIf="requiresLogin" type="button" class="action-button" (click)="reconnectSpotify()">Sign in again</button>
+    <button *ngIf="!requiresLogin" type="button" class="action-button" (click)="loadTopTracks()">Try again</button>
+  </div>
+
+  <div class="state-card" *ngIf="!isLoadingTracks && !loadError && topTracks.length === 0">
+    <h2>Not enough listening data yet</h2>
+    <p>Listen to some music on Spotify, then come back and discover your vibe.</p>
+  </div>
+
+  <section class="vibe-stage" *ngIf="!isLoadingTracks && !loadError && topTracks.length > 0">
+    <div class="vibe-art" aria-hidden="true">
+      <span class="orb orb-one"></span>
+      <span class="orb orb-two"></span>
+      <span class="spark">✳</span>
+      <span class="music-note">♫</span>
+    </div>
+
+    <div class="vibe-content">
+      <p class="track-count">BASED ON YOUR TOP {{ topTracks.length }} TRACKS · LAST 4 WEEKS</p>
+      <h2 *ngIf="vibe">{{ vibe.headline }}</h2>
+      <p *ngIf="vibe" class="persona">{{ vibe.persona }}</p>
+      <p *ngIf="vibe" class="vibe-description">{{ vibe.description }}</p>
+
+      <div class="mood-tags" *ngIf="vibe">
+        <span *ngFor="let mood of vibe.moods">{{ mood }}</span>
+      </div>
+
+      <div class="state-card compact" *ngIf="!vibe && !isGenerating && !vibeError">
+        <h2>Your soundtrack has a story.</h2>
+        <p>Ready to find out what kind of energy your recent favorites give off?</p>
+      </div>
+
+      <div class="state-card compact error" *ngIf="vibeError" role="alert">
+        <p>{{ vibeError }}</p>
+      </div>
+
+      <div class="generating" *ngIf="isGenerating" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Reading the room (and your track list)…</span>
+      </div>
+
+      <button type="button" class="action-button" [disabled]="isGenerating" (click)="generateVibe()">
+        {{ isGenerating ? 'Finding your vibe…' : vibe ? 'Remix my vibe' : 'Find my vibe' }}
+      </button>
+      <p class="disclaimer">A playful interpretation of track and artist names — not an audio analysis.</p>
+    </div>
+  </section>
+
+  <section class="track-strip" *ngIf="!isLoadingTracks && !loadError && topTracks.length > 0">
+    <h2>Your recent rotation</h2>
+    <div class="track-chips">
+      <span *ngFor="let track of topTracks.slice(0, 5); let i = index">
+        <strong>{{ (i + 1).toString().padStart(2, '0') }}</strong> {{ track.name }}
+      </span>
+    </div>
+  </section>
+</section>
