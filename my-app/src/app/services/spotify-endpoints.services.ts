@@ -9,8 +9,8 @@ export class SpotifyApiService {
 
   constructor(private http: HttpClient, private auth: SpotifyAuthService) {}
 
-  getUserPlaylists(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/me/playlists`);
+  getUserPlaylists(limit = 20): Observable<any> {
+    return this.http.get(`${this.apiUrl}/me/playlists?limit=${limit}`);
   }
 
   getUserProfile(): Observable<any> {
@@ -35,9 +35,8 @@ export class SpotifyApiService {
     return this.http.get(`${this.apiUrl}/artists/${artistId}/albums?limit=10`);
   }
 
-  getPlaylistTracks(playlistId: string): Observable<any> {
-  // Wrap the async token in an Observable
-    return this.http.get(`${this.apiUrl}/playlists/${playlistId}/items`);
+  getPlaylistTracks(playlistId: string, limit = 20): Observable<any> {
+    return this.http.get(`${this.apiUrl}/playlists/${playlistId}/items?limit=${limit}`);
   }
 
   getTopArtistsShort(): Observable<any>{

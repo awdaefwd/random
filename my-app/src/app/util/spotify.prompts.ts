@@ -65,5 +65,14 @@ export const PROMPTS =
 Tracks:
 ${JSON.stringify(tracks)}`,
 
+    MOOD_MIX: (
+        mood: string,
+        tracks: Array<{ id: string; name: string; artists: string; album: string }>,
+    ) =>
+        `You are a playlist curator. Arrange tracks from this playlist into a ${mood} listening mix. Use only the supplied track IDs; do not invent, modify, or repeat IDs. Return ONLY valid JSON with exactly one field: "trackIds", an array of 15 unique IDs in the best listening order (or all available tracks if fewer than 15). Choose tracks that fit the requested mood based only on title, artist, and album metadata, and make the sequence flow naturally. Do not claim to have heard the audio.
+
+Tracks:
+${JSON.stringify(tracks)}`,
+
     PLAYLIST_ANALYSIS: (playlistName: string, trackCount: number) => `You are a music analysis system.`,
 }

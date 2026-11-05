@@ -1,0 +1,89 @@
+<section class="mood-mix-page">
+  <header class="page-heading">
+    <p class="eyebrow">YOUR PLAYLIST, A NEW FEELING</p>
+    <h1>Make a Mood Mix</h1>
+    <p>Pick a playlist and a mood. We’ll arrange its tracks into a fresh listening sequence.</p>
+  </header>
+
+  <div class="state-card" *ngIf="isLoadingPlaylists" role="status">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Finding your playlists…</p>
+  </div>
+
+  <div class="state-card error" *ngIf="!isLoadingPlaylists && error" role="alert">
+    <p>{{ error }}</p>
+    <button *ngIf="requiresLogin" type="button" class="action-button" (click)="reconnectSpotify()">Sign in again</button>
+    <button *ngIf="!requiresLogin" type="button" class="action-button" (click)="loadPlaylists()">Try again</button>
+  </div>
+
+  <div class="state-card" *ngIf="!isLoadingPlaylists && !error && playlists.length === 0">
+    <h2>No playlists to mix yet</h2>
+    <p>Create or follow a playlist in Spotify, then come back to build a mix.</p>
+  </div>
+
+  <ng-container *ngIf="!isLoadingPlaylists && !error && playlists.length > 0">
+    <section class="mix-controls" aria-labelledby="playlist-label">
+      <label id="playlist-label" for="playlist-select">Choose a playlist</label>
+      <select
+        id="playlist-select"
+        [(ngModel)]="selectedPlaylistId"
+        (ngModelChange)="onSelectionChange()"
+        [disabled]="isGenerating"
+      >
+        <option *ngFor="let playlist of playlists" [value]="playlist.id">
+          {{ playlist.name }}<ng-container *ngIf="getPlaylistTrackCount(playlist) as trackCount"> · {{ trackCount }} tracks</ng-container>
+        </option>
+      </select>
+
+      <fieldset class="mood-options" [disabled]="isGenerating">
+        <legend>Choose a mood</legend>
+        <button
+          type="button"
+          class="mood-option"
+          *ngFor="let mood of moods"
+          [class.selected]="selectedMood === mood.id"
+          [attr.aria-pressed]="selectedMood === mood.id"
+          (click)="selectedMood = mood.id; onSelectionChange()"
+        >
+          <strong>{{ mood.title }}</strong>
+          <span>{{ mood.description }}</span>
+        </button>
+      </fieldset>
+
+      <p class="track-limit">
+        The mix considers up to the first 100 tracks in the playlist.
+      </p>
+
+      <button type="button" class="action-button" [disabled]="isGenerating" (click)="createMix()">
+        {{ isGenerating ? 'Building your mix…' : 'Create my mix' }}
+      </button>
+      <div class="generating" *ngIf="isGenerating" role="status">
+        <span class="spinner small" aria-hidden="true"></span>
+        <span>Finding a flow for your {{ selectedMoodPreset.title.toLowerCase() }} mix…</span>
+      </div>
+      <p class="disclaimer">AI curates the order from track names, artists, and albums; it doesn’t analyze the audio.</p>
+    </section>
+
+    <section class="mix-results" *ngIf="mixTracks.length > 0" aria-live="polite">
+      <div class="results-heading">
+        <div>
+          <p class="eyebrow">{{ selectedMoodPreset.title }} MIX</p>
+          <h2>{{ selectedPlaylist?.name }}</h2>
+          <p>{{ mixTracks.length }} tracks, arranged for your mood.</p>
+        </div>
+        <button type="button" class="action-button play-mix" (click)="playMix()">▶ Play mix</button>
+      </div>
+
+      <ol class="mix-track-list">
+        <li *ngFor="let track of mixTracks; let i = index">
+          <span class="track-number">{{ (i + 1).toString().padStart(2, '0') }}</span>
+          <img *ngIf="track.album?.images?.[0]?.url" [src]="track.album?.images?.[0]?.url" [alt]="track.album?.name + ' cover'" loading="lazy" />
+          <span class="track-copy">
+            <strong>{{ track.name }}</strong>
+            <span>{{ getArtists(track) }}</span>
+          </span>
+        </li>
+      </ol>
+    </section>
+  </ng-container>
+</section>

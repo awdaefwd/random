@@ -6,6 +6,7 @@ import { HomeComponent } from './home/home';
 import { LibraryComponent } from './library/library';
 import { DiscoverComponent } from './discover/discover';
 import { AppShellComponent } from './app-shell/app-shell';
+import { MoodMixComponent } from './mood-mix/mood-mix';
 
 const routeConfig: Routes = [
   {
@@ -22,6 +23,7 @@ const routeConfig: Routes = [
       { path: 'home', component: HomeComponent, title: 'Home' },
       { path: 'library', component: LibraryComponent, title: 'Your Library' },
       { path: 'discover', component: DiscoverComponent, title: 'Discover' },
+      { path: 'mix', component: MoodMixComponent, title: 'Mood Mix' },
       { path: 'tracklist/:id', component: TracklistComponent },
     ],
   },

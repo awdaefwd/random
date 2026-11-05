@@ -26,6 +26,7 @@ Angular app from this directory with `ng serve`.
 - **Home** shows your 10 most-played tracks from Spotify's short-term range (roughly the last four weeks).
 - **Library** lists and searches your Spotify playlists.
 - **Discover** creates a playful AI listening-vibe card from the names of your recent top tracks.
+- **Mood Mix** uses AI to reorder up to 100 tracks from a selected playlist for Focus, Night drive, Workout, or Chill, then plays the mix with Spotify Premium.
 - **Playback** uses Spotify's Web Playback SDK and requires Spotify Premium. After granting the new playback permissions, sign in again so Spotify can issue an updated token.
 
 ## Code scaffolding
