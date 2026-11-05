@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, PLATFORM_ID } from '@angular/core';
 import { SpotifyApiService } from '../services/spotify-endpoints.services';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -24,10 +26,17 @@ export class TracklistComponent implements OnInit {
   analysisResult: any = null;
   isLoadingAnalysis = false;
 
-  constructor(private spotify: SpotifyApiService, private route: ActivatedRoute,  private cdr: ChangeDetectorRef, private openAI: OpenAIService) {
+  constructor(
+    private spotify: SpotifyApiService,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
+    private openAI: OpenAIService,
+    @Inject(PLATFORM_ID) private platformId: object,
+  ) {
   }
 
   ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) return;
   
   this.route.params.pipe(
     switchMap(params => {

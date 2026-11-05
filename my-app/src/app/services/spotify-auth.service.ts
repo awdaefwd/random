@@ -28,6 +28,15 @@ export class SpotifyAuthService {
     storage.setItem(this.expiryKey, (Date.now() + expiresIn * 1000).toString());
   }
 
+  clearTokens() {
+    const storage = this.storage;
+    if (!storage) return;
+
+    storage.removeItem(this.accessTokenKey);
+    storage.removeItem(this.refreshTokenKey);
+    storage.removeItem(this.expiryKey);
+  }
+
   getValidAccessToken(): Observable<string | null> {
   const token = this.getAccessToken();
   if (token) return of(token);
@@ -61,17 +70,20 @@ export class SpotifyAuthService {
     { refresh_token: refreshToken }
   ).pipe(
     map(response => {
-      const { access_token, expires_in } = response;
+      const { access_token, expires_in, refresh_token: updatedRefreshToken } = response;
 
       if (access_token) {
-        this.setTokens(access_token, refreshToken, expires_in);
+        this.setTokens(access_token, updatedRefreshToken || refreshToken, expires_in);
         return access_token;
       }
 
       return null;
     }),
     catchError(err => {
-      console.error('Failed to refresh token', err);
+      if (err.status === 401) {
+        this.clearTokens();
+      }
+      console.error('Failed to refresh Spotify token:', err.status, err.error?.error || err.message);
       return of(null);
     })
   );

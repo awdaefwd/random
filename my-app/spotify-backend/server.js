@@ -25,6 +25,7 @@ app.use(express.json());
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'http://127.0.0.1:8888/callback';
+const FRONTEND_URL = process.env.SPOTIFY_FRONTEND_URL || 'http://localhost:4200';
 
 app.get('/', (req, res) => {
   res.send('Backend is running 🚀');
@@ -55,10 +56,15 @@ app.post('/api/openai', async (req, res) => {
 });
 
 app.get('/callback', async (req, res) => {
-  const { code } = req.query;  // Get the code from the query string
+  const { code, error } = req.query;
+  const callbackUrl = new URL('/callback', FRONTEND_URL);
 
   if (!code) {
-    return res.status(400).json({ error: 'Authorization code not provided' });
+    callbackUrl.searchParams.set(
+      'auth_error',
+      error === 'access_denied' ? 'access_denied' : 'missing_code',
+    );
+    return res.redirect(callbackUrl.toString());
   }
 
   try {
@@ -81,12 +87,23 @@ app.get('/callback', async (req, res) => {
     //console.log('Access Token:', response.data.access_token); // Log the token for debugging
     //res.json(response.data); Send the token response back to the frontend
     const { access_token, refresh_token, expires_in } = response.data;
-    const redirectUrl = `http://localhost:4200/callback?access_token=${access_token}&refresh_token=${refresh_token}&expires_in=${expires_in}`;
-    
-    res.redirect(redirectUrl);
+    if (!access_token || !refresh_token || !expires_in) {
+      throw new Error('Spotify token response is missing required fields');
+    }
+
+    callbackUrl.hash = new URLSearchParams({
+      access_token,
+      refresh_token,
+      expires_in: String(expires_in),
+    }).toString();
+    return res.redirect(callbackUrl.toString());
   } catch (err) {
-    console.error('Error during token exchange:', err);
-    res.status(500).json({ error: 'Token exchange failed' });
+    console.error('Spotify authorization code exchange failed:', {
+      status: err.response?.status || 'invalid response',
+      error: err.response?.data?.error || err.message || 'unknown',
+    });
+    callbackUrl.searchParams.set('auth_error', 'token_exchange_failed');
+    return res.redirect(callbackUrl.toString());
   }
 });
 
@@ -142,11 +159,22 @@ app.post('/api/refresh-token', async (req, res) => {
       },
     });
 
-    const { access_token, expires_in } = response.data;
-    res.json({ access_token, expires_in });
+    const { access_token, expires_in, refresh_token: updatedRefreshToken } = response.data;
+    res.json({ access_token, expires_in, refresh_token: updatedRefreshToken || refresh_token });
   } catch (err) {
-    console.error('Failed to refresh token:', err.message || err);
-    res.status(500).json({ error: 'Refresh failed' });
+    const spotifyError = err.response?.data?.error;
+    console.error('Failed to refresh Spotify token:', {
+      status: err.response?.status || 'network error',
+      error: spotifyError || err.code || 'unknown',
+    });
+
+    if (spotifyError === 'invalid_grant') {
+      return res.status(401).json({ error: 'Spotify authorization expired; sign in again.' });
+    }
+    if (spotifyError === 'invalid_client') {
+      return res.status(500).json({ error: 'Spotify app credentials are invalid.' });
+    }
+    return res.status(502).json({ error: 'Spotify token refresh failed.' });
   }
 });
 

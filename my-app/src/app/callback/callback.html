@@ -1,0 +1,9 @@
+<main>
+  @if (authError) {
+    <h1>Spotify-belépés sikertelen</h1>
+    <p>{{ authError }}</p>
+    <a href="/">Vissza a belépéshez</a>
+  } @else {
+    <p>Spotify-belépés feldolgozása…</p>
+  }
+</main>

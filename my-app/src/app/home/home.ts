@@ -1,4 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, PLATFORM_ID } from '@angular/core';
 import { SpotifyApiService } from '../services/spotify-endpoints.services';
 import { SpotifyAuthService } from '../services/spotify-auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,10 +17,17 @@ export class HomeComponent implements OnInit{
   playlists: any[] = [];
   isCollapsed = false;
 
-  constructor(private spotify: SpotifyApiService, private auth: SpotifyAuthService, private route: ActivatedRoute,private router: Router) {}
+  constructor(
+    private spotify: SpotifyApiService,
+    private auth: SpotifyAuthService,
+    private route: ActivatedRoute,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: object,
+  ) {}
   
   ngOnInit(): void {
-     // now safe to call API
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.spotify.getUserProfile().subscribe({
       next:(res) => console.log(res),
       error: (err) => console.error(err)
